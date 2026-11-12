@@ -1,0 +1,500 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#090f1e">
+<title>GoldJournal PRO</title>
+<style>
+:root {
+ --bg:#090f1e;--panel:#141f34;--line:#293750;
+ --gold:#f3bd59;--green:#42d69a;--red:#ff7784;
+ --muted:#9ba9c0;--white:#f4f7ff;
+}
+*{box-sizing:border-box}
+body{
+ margin:0;background:var(--bg);color:var(--white);
+ font-family:Arial,sans-serif;
+}
+.container{max-width:1200px;margin:auto;padding:22px}
+header{
+ display:flex;justify-content:space-between;
+ align-items:center;flex-wrap:wrap;gap:15px;
+ margin-bottom:25px;
+}
+.logo{display:flex;align-items:center;gap:12px}
+.logo-icon{
+ background:linear-gradient(135deg,#ffe3a0,#bd7d21);
+ color:#111;width:48px;height:48px;
+ display:grid;place-items:center;
+ border-radius:14px;font-size:25px;font-weight:bold;
+}
+h1{margin:0;color:var(--gold);font-size:23px}
+.subtitle{font-size:12px;color:var(--muted);margin-top:4px}
+button{
+ border:0;padding:11px 15px;border-radius:9px;
+ font-weight:bold;cursor:pointer;
+}
+.gold-btn{background:var(--gold);color:#151515}
+.gray-btn{background:#263650;color:white}
+.red-btn{background:#51232d;color:#ff9ca5}
+.hero{margin:25px 0}
+.hero small{color:var(--gold);letter-spacing:2px}
+.hero h2{font-size:32px;margin:7px 0}
+.hero p{color:var(--muted)}
+.stats{
+ display:grid;grid-template-columns:repeat(4,1fr);
+ gap:13px;margin-bottom:17px;
+}
+.card{
+ background:linear-gradient(145deg,#17243c,#111a2c);
+ border:1px solid var(--line);
+ border-radius:15px;padding:18px;
+}
+.stat small{color:var(--muted)}
+.stat h2{margin:9px 0;color:var(--gold);font-size:25px}
+.main{
+ display:grid;grid-template-columns:1fr 1.6fr;
+ gap:15px;align-items:start;
+}
+h3{margin:0 0 16px;font-size:17px}
+label{
+ display:block;color:var(--muted);
+ font-size:11px;font-weight:bold;margin:12px 0 5px;
+}
+input,select,textarea{
+ width:100%;padding:12px;
+ background:#091426;color:white;
+ border:1px solid #34425c;
+ border-radius:8px;font-size:14px;
+}
+textarea{resize:vertical;min-height:80px}
+.form-grid{
+ display:grid;grid-template-columns:1fr 1fr;gap:5px 10px;
+}
+.full{grid-column:1/-1}
+.form-buttons{display:flex;gap:8px;margin-top:17px}
+.form-buttons button{flex:1}
+.toolbar{
+ display:flex;justify-content:space-between;
+ align-items:center;gap:10px;flex-wrap:wrap;
+}
+.toolbar input,.toolbar select{max-width:180px}
+.table-box{overflow-x:auto;margin-top:15px}
+table{width:100%;border-collapse:collapse;min-width:650px}
+th,td{
+ padding:12px 9px;text-align:left;
+ border-bottom:1px solid var(--line);font-size:12px;
+}
+th{color:var(--muted)}
+.buy{color:var(--green)}
+.sell{color:var(--red)}
+.profit{color:var(--green);font-weight:bold}
+.loss{color:var(--red);font-weight:bold}
+.tag{
+ padding:5px 8px;border-radius:20px;
+ background:#263650;font-size:10px;font-weight:bold;
+}
+.empty{text-align:center;padding:35px;color:var(--muted)}
+.empty b{display:block;color:white;margin-bottom:5px}
+footer{text-align:center;color:var(--muted);font-size:11px;padding:25px}
+@media(max-width:800px){
+ .main{grid-template-columns:1fr}
+ .stats{grid-template-columns:repeat(2,1fr)}
+}
+@media(max-width:480px){
+ .container{padding:13px}
+ .hero h2{font-size:25px}
+ .card{padding:14px}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<header>
+ <div class="logo">
+  <div class="logo-icon">G</div>
+  <div>
+   <h1>GOLDJOURNAL PRO</h1>
+   <div class="subtitle">Professional Trading Journal</div>
+  </div>
+ </div>
+ <div>
+  <button class="gray-btn" onclick="exportCSV()">↓ Export CSV</button>
+  <button class="red-btn" onclick="resetAll()">Reset</button>
+ </div>
+</header>
+
+<section class="hero">
+ <small>YOUR TRADING DASHBOARD</small>
+ <h2>Trade Smart. <span style="color:#f3bd59">Track Better.</span></h2>
+ <p>Catat transaksi, evaluasi strategi, dan tingkatkan disiplin trading.</p>
+</section>
+
+<section class="stats">
+ <div class="card stat">
+  <small>Total Profit / Loss</small>
+  <h2 id="totalPL">$0.00</h2>
+  <small>Akumulasi hasil trading</small>
+ </div>
+ <div class="card stat">
+  <small>Win Rate</small>
+  <h2 id="winRate">0%</h2>
+  <small id="winInfo">0 kemenangan</small>
+ </div>
+ <div class="card stat">
+  <small>Total Trade</small>
+  <h2 id="totalTrade">0</h2>
+  <small>Semua transaksi</small>
+ </div>
+ <div class="card stat">
+  <small>Profit Factor</small>
+  <h2 id="profitFactor">—</h2>
+  <small>Gross profit / gross loss</small>
+ </div>
+</section>
+
+<div class="main">
+
+<section class="card">
+ <h3 id="formTitle">＋ Tambah Transaksi</h3>
+
+ <form id="tradeForm">
+  <input type="hidden" id="editId">
+
+  <div class="form-grid">
+
+   <div class="full">
+    <label>TANGGAL</label>
+    <input type="date" id="date" required>
+   </div>
+
+   <div class="full">
+    <label>PAIR</label>
+    <input id="pair" value="XAUUSD" required>
+   </div>
+
+   <div>
+    <label>POSISI</label>
+    <select id="direction">
+     <option>BUY</option>
+     <option>SELL</option>
+    </select>
+   </div>
+
+   <div>
+    <label>TIMEFRAME</label>
+    <select id="timeframe">
+     <option>M1</option><option selected>M5</option>
+     <option>M15</option><option>M30</option>
+     <option>H1</option><option>H4</option><option>D1</option>
+    </select>
+   </div>
+
+   <div>
+    <label>ENTRY PRICE</label>
+    <input type="number" step="any" id="entry">
+   </div>
+
+   <div>
+    <label>EXIT PRICE</label>
+    <input type="number" step="any" id="exit">
+   </div>
+
+   <div>
+    <label>STOP LOSS</label>
+    <input type="number" step="any" id="sl">
+   </div>
+
+   <div>
+    <label>TAKE PROFIT</label>
+    <input type="number" step="any" id="tp">
+   </div>
+
+   <div>
+    <label>LOT</label>
+    <input type="number" step="any" id="lot">
+   </div>
+
+   <div>
+    <label>HASIL P/L (USD)</label>
+    <input type="number" step="any" id="pl" required>
+   </div>
+
+   <div>
+    <label>STRATEGI</label>
+    <select id="strategy">
+     <option>ICT / SMC</option>
+     <option>Fibonacci</option>
+     <option>OTE</option>
+     <option>Breakout</option>
+     <option>Support Resistance</option>
+     <option>Price Action</option>
+     <option>News Trading</option>
+     <option>Scalping</option>
+    </select>
+   </div>
+
+   <div>
+    <label>SESI MARKET</label>
+    <select id="session">
+     <option>Asia</option>
+     <option>London</option>
+     <option>New York</option>
+     <option>Overlap</option>
+    </select>
+   </div>
+
+   <div class="full">
+    <label>CATATAN / EVALUASI</label>
+    <textarea id="notes" placeholder="Alasan entry, analisis market, psikologi, kesalahan dan evaluasi..."></textarea>
+   </div>
+
+  </div>
+
+  <div class="form-buttons">
+   <button class="gold-btn" type="submit" id="saveBtn">SIMPAN TRADE</button>
+   <button class="gray-btn" type="button" id="cancelBtn" hidden>BATAL</button>
+  </div>
+ </form>
+</section>
+
+<section class="card">
+ <div class="toolbar">
+  <h3>Riwayat Trading</h3>
+  <input id="search" placeholder="Cari pair..." oninput="render()">
+  <select id="filter" onchange="render()">
+   <option value="all">Semua</option>
+   <option value="win">Profit</option>
+   <option value="loss">Loss</option>
+   <option value="be">Break Even</option>
+  </select>
+ </div>
+
+ <div class="table-box">
+  <table>
+   <thead>
+    <tr>
+     <th>TANGGAL</th>
+     <th>PAIR</th>
+     <th>POSISI</th>
+     <th>STRATEGI</th>
+     <th>P/L</th>
+     <th>AKSI</th>
+    </tr>
+   </thead>
+   <tbody id="history"></tbody>
+  </table>
+  <div id="empty" class="empty">
+   <b>Belum ada transaksi</b>
+   Mulai catat trading pertamamu.
+  </div>
+ </div>
+</section>
+
+</div>
+
+<footer>
+ GOLDJOURNAL PRO • Your personal trading performance tracker
+ <br>Data tersimpan di browser perangkat ini.
+</footer>
+
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+
+const fields = [
+ "date","pair","direction","timeframe",
+ "entry","exit","sl","tp","lot","pl",
+ "strategy","session","notes"
+];
+
+let trades = [];
+
+try {
+ trades = JSON.parse(localStorage.getItem("goldjournal_data") || "[]");
+ if (!Array.isArray(trades)) trades = [];
+} catch(e) {
+ trades = [];
+}
+
+$("date").value = new Date().toISOString().slice(0,10);
+
+function money(n) {
+ return (n < 0 ? "-$" : "$") + Math.abs(n).toFixed(2);
+}
+
+function persist() {
+ localStorage.setItem("goldjournal_data",JSON.stringify(trades));
+}
+
+function escapeHTML(value) {
+ return String(value ?? "").replace(/[&<>"']/g,c => ({
+  "&":"&amp;",
+  "<":"&lt;",
+  ">":"&gt;",
+  '"':"&quot;",
+  "'":"&#39;"
+ }[c]));
+}
+
+function render() {
+
+ const total = trades.reduce((s,t)=>s + Number(t.pl),0);
+ const wins = trades.filter(t=>Number(t.pl)>0);
+ const losses = trades.filter(t=>Number(t.pl)<0);
+
+ const grossProfit = wins.reduce((s,t)=>s+Number(t.pl),0);
+ const grossLoss = Math.abs(losses.reduce((s,t)=>s+Number(t.pl),0));
+
+ $("totalPL").textContent = money(total);
+ $("totalPL").style.color = total>=0 ? "#42d69a" : "#ff7784";
+
+ $("winRate").textContent =
+  (trades.length ? wins.length/trades.length*100 : 0).toFixed(1)+"%";
+
+ $("winInfo").textContent =
+  wins.length+" menang dari "+trades.length+" trade";
+
+ $("totalTrade").textContent = trades.length;
+
+ $("profitFactor").textContent =
+  grossLoss ? (grossProfit/grossLoss).toFixed(2) :
+  grossProfit ? "∞" : "—";
+
+ const query = $("search").value.toLowerCase();
+ const filter = $("filter").value;
+
+ const list = trades
+ .filter(t => {
+  const match = (t.pair+" "+t.strategy).toLowerCase().includes(query);
+  const result =
+   filter==="all" ||
+   (filter==="win" && Number(t.pl)>0) ||
+   (filter==="loss" && Number(t.pl)<0) ||
+   (filter==="be" && Number(t.pl)===0);
+  return match && result;
+ })
+ .slice()
+ .sort((a,b)=>b.date.localeCompare(a.date));
+
+ $("history").innerHTML = list.map(t=>`
+  <tr>
+   <td>${escapeHTML(t.date)}</td>
+   <td><b>${escapeHTML(t.pair)}</b></td>
+   <td class="${t.direction==="BUY"?"buy":"sell"}">
+    ${escapeHTML(t.direction)}
+   </td>
+   <td>${escapeHTML(t.strategy)}</td>
+   <td class="${t.pl>0?"profit":t.pl<0?"loss":""}">
+    ${money(Number(t.pl))}
+   </td>
+   <td>
+    <button class="gray-btn" onclick="editTrade('${t.id}')">Edit</button>
+    <button class="red-btn" onclick="deleteTrade('${t.id}')">X</button>
+   </td>
+  </tr>
+ `).join("");
+
+ $("empty").style.display = list.length ? "none" : "block";
+}
+
+$("tradeForm").addEventListener("submit",function(e) {
+ e.preventDefault();
+
+ const trade = {};
+ fields.forEach(k => trade[k] = $(k).value);
+ trade.pl = Number(trade.pl);
+
+ const id = $("editId").value;
+
+ if(id) {
+  trades = trades.map(t => t.id===id ? {...trade,id} : t);
+ } else {
+  trade.id = crypto.randomUUID
+   ? crypto.randomUUID()
+   : String(Date.now());
+  trades.push(trade);
+ }
+
+ persist();
+ render();
+ resetForm();
+});
+
+function resetForm() {
+ $("tradeForm").reset();
+ $("date").value = new Date().toISOString().slice(0,10);
+ $("pair").value = "XAUUSD";
+ $("editId").value = "";
+ $("formTitle").textContent = "＋ Tambah Transaksi";
+ $("saveBtn").textContent = "SIMPAN TRADE";
+ $("cancelBtn").hidden = true;
+}
+
+function editTrade(id) {
+ const t = trades.find(x=>x.id===id);
+ if(!t) return;
+
+ fields.forEach(k => $(k).value = t[k] ?? "");
+ $("editId").value = id;
+ $("formTitle").textContent = "✎ Edit Transaksi";
+ $("saveBtn").textContent = "UPDATE TRADE";
+ $("cancelBtn").hidden = false;
+
+ window.scrollTo({top:0,behavior:"smooth"});
+}
+
+function deleteTrade(id) {
+ if(confirm("Yakin ingin menghapus transaksi ini?")) {
+  trades = trades.filter(t=>t.id!==id);
+  persist();
+  render();
+ }
+}
+
+function resetAll() {
+ if(confirm("Hapus semua data jurnal? Pastikan sudah backup!")) {
+  trades = [];
+  persist();
+  resetForm();
+  render();
+ }
+}
+
+$("cancelBtn").onclick = resetForm;
+
+function exportCSV() {
+ const columns = ["date",...fields.filter(k=>k!=="date"),"id"];
+
+ const rows = [
+  columns.join(","),
+  ...trades.map(t =>
+   columns.map(k =>
+    '"'+String(t[k]??"").replace(/"/g,'""')+'"'
+   ).join(",")
+  )
+ ];
+
+ const blob = new Blob(
+  ["\ufeff"+rows.join("\n")],
+  {type:"text/csv;charset=utf-8"}
+ );
+
+ const url = URL.createObjectURL(blob);
+ const a = document.createElement("a");
+ a.href = url;
+ a.download = "GoldJournal-Backup.csv";
+ a.click();
+ URL.revokeObjectURL(url);
+}
+
+render();
+</script>
+
+</body>
+</html>
